@@ -11,6 +11,7 @@ import { GooglePlacesAutocomplete } from "./google-places-autocomplete"
 import Image from "next/image"
 import { Trash2, DollarSign } from "lucide-react"
 import { toast } from "sonner"
+import { LocationMapPreview } from "./location-map-preview"
 
 type Rating = {
   id: string
@@ -73,8 +74,23 @@ export function EditRatingModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fullPlaceData, setFullPlaceData] = useState<BurgerPlace | null>(null)
 
   const supabase = createClient()
+
+  useEffect(() => {
+    const fetchPlaceData = async () => {
+      const { data } = await supabase.from("burger_places").select("*").eq("id", place.id).single()
+
+      if (data) {
+        setFullPlaceData(data)
+      }
+    }
+
+    if (isOpen) {
+      fetchPlaceData()
+    }
+  }, [isOpen, place.id, supabase])
 
   useEffect(() => {
     if (existingRating) {
@@ -313,6 +329,17 @@ export function EditRatingModal({
                 className="w-full bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2"
               />
             </div>
+
+            {fullPlaceData?.latitude && fullPlaceData?.longitude && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Ubicación</h4>
+                <LocationMapPreview
+                  latitude={fullPlaceData.latitude}
+                  longitude={fullPlaceData.longitude}
+                  placeName={placeName}
+                />
+              </div>
+            )}
 
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">

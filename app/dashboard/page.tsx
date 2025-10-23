@@ -66,6 +66,9 @@ export default function DashboardPage() {
       nextAdventure: adventureRes.data as {
         id: string
         place_name: string
+        latitude: number | null
+        longitude: number | null
+        address: string | null
         updated_at: string
         updated_by: string
       } | null,
@@ -305,6 +308,9 @@ export default function DashboardPage() {
           <div className="space-y-4 mb-6">
             <NextAdventureCard
               placeName={data.nextAdventure?.place_name || ""}
+              latitude={data.nextAdventure?.latitude || null}
+              longitude={data.nextAdventure?.longitude || null}
+              address={data.nextAdventure?.address || null}
               currentUser={currentUser}
               onUpdate={() => mutate()}
             />

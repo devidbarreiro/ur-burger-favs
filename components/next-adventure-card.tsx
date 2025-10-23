@@ -6,14 +6,25 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { GooglePlacesAutocomplete } from "./google-places-autocomplete"
+import { LocationMapPreview } from "./location-map-preview"
 
 type NextAdventureCardProps = {
   placeName: string
+  latitude: number | null
+  longitude: number | null
+  address: string | null
   currentUser: "Lolo" | "David"
   onUpdate: () => void
 }
 
-export function NextAdventureCard({ placeName, currentUser, onUpdate }: NextAdventureCardProps) {
+export function NextAdventureCard({
+  placeName,
+  latitude,
+  longitude,
+  address,
+  currentUser,
+  onUpdate,
+}: NextAdventureCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [searchValue, setSearchValue] = useState("")
   const [placeData, setPlaceData] = useState<{
@@ -148,9 +159,15 @@ export function NextAdventureCard({ placeName, currentUser, onUpdate }: NextAdve
           </div>
         </div>
       ) : (
-        <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
-          <p className="text-white font-semibold text-lg">{placeName}</p>
-          <p className="text-gray-400 text-xs mt-1">¡A por ella! 🍔</p>
+        <div className="space-y-3">
+          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+            <p className="text-white font-semibold text-lg">{placeName}</p>
+            {address && <p className="text-gray-400 text-xs mt-1">{address}</p>}
+            <p className="text-gray-400 text-xs mt-1">¡A por ella! 🍔</p>
+          </div>
+          {latitude && longitude && (
+            <LocationMapPreview latitude={latitude} longitude={longitude} placeName={placeName} />
+          )}
         </div>
       )}
     </div>
