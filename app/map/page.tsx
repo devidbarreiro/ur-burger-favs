@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, Star, Search, Map, Phone, Globe, Clock, Euro } from "lucide-react"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { getGoogleMapsConfig } from "@/app/actions/maps"
+import { toast } from "sonner"
 import type { google } from "google-maps"
 
 interface BurgerPlace {
@@ -90,12 +91,19 @@ export default function MapPage() {
           })
         },
         (error) => {
-          console.error("[v0] Error getting location:", error)
+          if (error.code === error.PERMISSION_DENIED) {
+            toast.info("Usando ubicación por defecto", {
+              description: "Activa la ubicación para ver hamburgueserías cerca de ti",
+            })
+          }
           // Default to Madrid if location access denied
           setUserLocation({ lat: 40.4168, lng: -3.7038 })
         },
       )
     } else {
+      toast.info("Geolocalización no disponible", {
+        description: "Usando ubicación por defecto (Madrid)",
+      })
       // Default to Madrid
       setUserLocation({ lat: 40.4168, lng: -3.7038 })
     }
