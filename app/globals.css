@@ -3,105 +3,79 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Comprehensive neon design system with dark theme */
 :root {
-  /* Base colors - Dark neon theme */
   --background: oklch(0.12 0.02 264);
   --foreground: oklch(0.98 0.01 264);
-
-  /* Card system */
   --card: oklch(0.18 0.03 264);
   --card-foreground: oklch(0.98 0.01 264);
-
-  /* Popover/Modal system */
   --popover: oklch(0.15 0.03 264);
   --popover-foreground: oklch(0.98 0.01 264);
-
-  /* Primary - Neon Pink (Lolo) */
   --primary: oklch(0.65 0.25 340);
   --primary-foreground: oklch(0.98 0.01 340);
-
-  /* Secondary - Neon Blue (David) */
   --secondary: oklch(0.6 0.22 240);
   --secondary-foreground: oklch(0.98 0.01 240);
-
-  /* Muted elements */
   --muted: oklch(0.25 0.02 264);
   --muted-foreground: oklch(0.6 0.01 264);
-
-  /* Accent - Neon Purple */
   --accent: oklch(0.62 0.24 300);
   --accent-foreground: oklch(0.98 0.01 300);
-
-  /* Destructive - Neon Red */
   --destructive: oklch(0.58 0.24 20);
   --destructive-foreground: oklch(0.98 0.01 20);
-
-  /* Borders and inputs */
   --border: oklch(0.3 0.03 264);
   --input: oklch(0.22 0.03 264);
   --ring: oklch(0.65 0.25 340);
-
-  /* Chart colors - Neon palette */
-  --chart-1: oklch(0.65 0.25 340); /* Pink */
-  --chart-2: oklch(0.6 0.22 240); /* Blue */
-  --chart-3: oklch(0.62 0.24 300); /* Purple */
-  --chart-4: oklch(0.68 0.22 160); /* Cyan */
-  --chart-5: oklch(0.7 0.2 80); /* Yellow */
-
-  /* Border radius system */
+  --chart-1: oklch(0.65 0.25 340);
+  --chart-2: oklch(0.6 0.22 240);
+  --chart-3: oklch(0.62 0.24 300);
+  --chart-4: oklch(0.68 0.22 160);
+  --chart-5: oklch(0.7 0.2 80);
   --radius: 0.75rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
 
-  /* Sidebar (if needed) */
-  --sidebar: oklch(0.15 0.03 264);
-  --sidebar-foreground: oklch(0.98 0.01 264);
-  --sidebar-primary: oklch(0.65 0.25 340);
-  --sidebar-primary-foreground: oklch(0.98 0.01 340);
-  --sidebar-accent: oklch(0.22 0.03 264);
-  --sidebar-accent-foreground: oklch(0.98 0.01 264);
-  --sidebar-border: oklch(0.3 0.03 264);
-  --sidebar-ring: oklch(0.65 0.25 340);
-
-  /* Custom neon colors */
-  --neon-pink: oklch(0.65 0.25 340);
-  --neon-pink-glow: oklch(0.65 0.25 340 / 0.5);
-  --neon-blue: oklch(0.6 0.22 240);
-  --neon-blue-glow: oklch(0.6 0.22 240 / 0.5);
-  --neon-purple: oklch(0.62 0.24 300);
-  --neon-cyan: oklch(0.68 0.22 160);
-  --neon-yellow: oklch(0.7 0.2 80);
-
-  /* Spacing scale */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-
-  /* Typography scale */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-
-  /* Shadow system - Neon glows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
-  --shadow-neon-pink: 0 0 20px var(--neon-pink-glow), 0 0 40px var(--neon-pink-glow);
-  --shadow-neon-blue: 0 0 20px var(--neon-blue-glow), 0 0 40px var(--neon-blue-glow);
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
 }
 
 @theme inline {
-  --font-sans: "Geist", system-ui, sans-serif;
-  --font-mono: "Geist Mono", monospace;
-
-  /* Map design tokens to Tailwind utilities */
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -126,15 +100,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-
-  /* Radius tokens */
-  --radius-sm: calc(var(--radius) - 0.25rem);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 0.25rem);
-  --radius-xl: calc(var(--radius) + 0.5rem);
-  --radius-full: 9999px;
-
-  /* Sidebar tokens */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -143,327 +112,59 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-
-  /* Custom neon color utilities */
-  --color-neon-pink: var(--neon-pink);
-  --color-neon-blue: var(--neon-blue);
-  --color-neon-purple: var(--neon-purple);
-  --color-neon-cyan: var(--neon-cyan);
-  --color-neon-yellow: var(--neon-yellow);
 }
 
 @layer base {
   * {
-    border-color: var(--color-border);
     @apply border-border outline-ring/50;
   }
-
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    @apply bg-background text-foreground antialiased;
-  }
-
-  /* Typography base styles */
-  h1 {
-    @apply text-4xl font-bold tracking-tight;
-  }
-
-  h2 {
-    @apply text-3xl font-semibold tracking-tight;
-  }
-
-  h3 {
-    @apply text-2xl font-semibold tracking-tight;
-  }
-
-  h4 {
-    @apply text-xl font-semibold;
-  }
-
-  p {
-    @apply leading-relaxed;
+    @apply bg-background text-foreground;
   }
 }
 
-/* Enhanced neon glow effects with multiple intensities */
-.neon-pink {
-  color: var(--neon-pink);
-  text-shadow: 0 0 10px var(--neon-pink-glow), 0 0 20px var(--neon-pink-glow), 0 0 30px var(--neon-pink-glow), 0 0 40px
-    var(--neon-pink-glow);
-}
-
-.neon-blue {
-  color: var(--neon-blue);
-  text-shadow: 0 0 10px var(--neon-blue-glow), 0 0 20px var(--neon-blue-glow), 0 0 30px var(--neon-blue-glow), 0 0 40px
-    var(--neon-blue-glow);
-}
-
-.neon-purple {
-  color: var(--neon-purple);
-  text-shadow: 0 0 10px oklch(0.62 0.24 300 / 0.5), 0 0 20px oklch(0.62 0.24 300 / 0.5), 0 0 30px
-    oklch(0.62 0.24 300 / 0.5);
-}
-
-/* Border glow effects */
-.neon-border-pink {
-  border-color: var(--neon-pink);
-  box-shadow: 0 0 10px var(--neon-pink-glow), 0 0 20px var(--neon-pink-glow), inset 0 0 10px var(--neon-pink-glow);
-}
-
-.neon-border-blue {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 10px var(--neon-blue-glow), 0 0 20px var(--neon-blue-glow), inset 0 0 10px var(--neon-blue-glow);
-}
-
-.neon-border-purple {
-  border-color: var(--neon-purple);
-  box-shadow: 0 0 10px oklch(0.62 0.24 300 / 0.5), 0 0 20px oklch(0.62 0.24 300 / 0.5), inset 0 0 10px
-    oklch(0.62 0.24 300 / 0.5);
-}
-
-/* Background glow effects */
-.neon-bg-pink {
-  background-color: var(--neon-pink);
-  box-shadow: 0 0 20px var(--neon-pink-glow), 0 0 40px var(--neon-pink-glow), 0 0 60px var(--neon-pink-glow);
-}
-
-.neon-bg-blue {
-  background-color: var(--neon-blue);
-  box-shadow: 0 0 20px var(--neon-blue-glow), 0 0 40px var(--neon-blue-glow), 0 0 60px var(--neon-blue-glow);
-}
-
-/* Subtle glow for cards and containers */
-.card-glow {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 0 15px rgb(236 72 153 / 0.1), 0 0 30px rgb(59 130 246 / 0.1);
-}
-
-/* Hover effects */
-.neon-hover-pink {
-  transition: all 0.3s ease;
-}
-
-.neon-hover-pink:hover {
-  box-shadow: 0 0 15px var(--neon-pink-glow), 0 0 30px var(--neon-pink-glow), 0 0 45px var(--neon-pink-glow);
-  transform: translateY(-2px);
-}
-
-.neon-hover-blue {
-  transition: all 0.3s ease;
-}
-
-.neon-hover-blue:hover {
-  box-shadow: 0 0 15px var(--neon-blue-glow), 0 0 30px var(--neon-blue-glow), 0 0 45px var(--neon-blue-glow);
-  transform: translateY(-2px);
-}
-
-/* Utility classes for consistent spacing */
-.container-padding {
-  padding: var(--spacing-md);
-}
-
-.section-spacing {
-  margin-bottom: var(--spacing-xl);
-}
-
-/* Glass morphism effect for cards */
-.glass-card {
-  background: oklch(0.18 0.03 264 / 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid oklch(0.3 0.03 264 / 0.5);
-}
-
-/* Adding smooth animation utilities */
-@keyframes fade-in {
-  from {
-    opacity: 0;
+@layer utilities {
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
   }
-  to {
-    opacity: 1;
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
 
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
-}
 
-@keyframes zoom-in {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
   }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px var(--neon-pink-glow), 0 0 40px var(--neon-pink-glow);
-  }
-  50% {
-    box-shadow: 0 0 30px var(--neon-pink-glow), 0 0 60px var(--neon-pink-glow);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-.animate-slide-in {
-  animation: slide-in-from-bottom 0.5s ease-out;
-}
-
-.animate-zoom-in {
-  animation: zoom-in 0.3s ease-out;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Smooth transitions for interactive elements */
-.transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transition-bounce {
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* Adding swipe gesture visual feedback */
-@keyframes swipe-hint {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-10px);
-  }
-}
-
-.swipe-hint {
-  animation: swipe-hint 2s ease-in-out infinite;
-}
-
-/* Enhanced card hover effects with better performance */
-.card-3d {
-  transform-style: preserve-3d;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.card-3d:hover {
-  transform: perspective(1000px) rotateY(-5deg) rotateX(2deg) scale(1.05);
-}
-
-.card-3d:active {
-  transform: perspective(1000px) rotateY(-5deg) rotateX(2deg) scale(0.95);
-}
-
-/* Optimized image loading with blur effect */
-.image-blur-load {
-  filter: blur(10px);
-  transition: filter 0.3s ease-out;
-}
-
-.image-blur-load.loaded {
-  filter: blur(0);
-}
-
-/* Staggered animation for grid items */
-@keyframes stagger-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.stagger-item {
-  animation: stagger-fade-in 0.5s ease-out backwards;
-}
-
-/* Smooth modal transitions */
-@keyframes modal-overlay-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-content-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.modal-overlay {
-  animation: modal-overlay-in 0.2s ease-out;
-}
-
-.modal-content {
-  animation: modal-content-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Button press feedback */
-.button-press {
-  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-}
-
-.button-press:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Loading skeleton shimmer effect */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(90deg, oklch(0.18 0.03 264) 0%, oklch(0.25 0.03 264) 50%, oklch(0.18 0.03 264) 100%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
   }
 }

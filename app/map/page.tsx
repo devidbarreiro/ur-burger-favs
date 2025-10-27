@@ -8,7 +8,7 @@ import { getGoogleMapsConfig } from "@/app/actions/maps"
 import { toast } from "sonner"
 import type { google } from "google-maps"
 
-interface BurgerPlace {
+interface Restaurant {
   id: string
   name: string
   image_url: string
@@ -16,6 +16,7 @@ interface BurgerPlace {
   longitude: number
   address: string
   avg_rating: number
+  visit_count: number
 }
 
 interface NextAdventure {
@@ -49,10 +50,10 @@ export default function MapPage() {
   const router = useRouter()
   const mapRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<ViewMode>("our-map")
-  const [places, setPlaces] = useState<BurgerPlace[]>([])
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [nextAdventure, setNextAdventure] = useState<NextAdventure | null>(null)
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([])
-  const [selectedPlace, setSelectedPlace] = useState<BurgerPlace | null>(null)
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [selectedNearbyPlace, setSelectedNearbyPlace] = useState<NearbyPlace | null>(null)
   const [map, setMap] = useState<google.maps.Map | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -61,19 +62,19 @@ export default function MapPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
-    loadPlaces()
+    loadRestaurants()
     loadNextAdventure()
     loadGoogleMapsScript()
     getUserLocation()
   }, [])
 
   useEffect(() => {
-    if (viewMode === "our-map" && (places.length > 0 || nextAdventure) && scriptLoaded && !map && mapRef.current) {
+    if (viewMode === "our-map" && (restaurants.length > 0 || nextAdventure) && scriptLoaded && !map && mapRef.current) {
       initOurMap()
     } else if (viewMode === "explore" && scriptLoaded && !map && mapRef.current) {
       initExploreMap()
     }
-  }, [places, nextAdventure, scriptLoaded, map, viewMode])
+  }, [restaurants, nextAdventure, scriptLoaded, map, viewMode])
 
   useEffect(() => {
     if (viewMode === "explore" && userLocation && nearbyPlaces.length === 0) {
@@ -96,7 +97,6 @@ export default function MapPage() {
               description: "Activa la ubicación para ver hamburgueserías cerca de ti",
             })
           }
-          // Default to Madrid if location access denied
           setUserLocation({ lat: 40.4168, lng: -3.7038 })
         },
       )
@@ -104,7 +104,6 @@ export default function MapPage() {
       toast.info("Geolocalización no disponible", {
         description: "Usando ubicación por defecto (Madrid)",
       })
-      // Default to Madrid
       setUserLocation({ lat: 40.4168, lng: -3.7038 })
     }
   }
@@ -118,7 +117,6 @@ export default function MapPage() {
       const data = await response.json()
 
       if (data.places) {
-        // Sort by rating
         const sortedPlaces = data.places.sort((a: NearbyPlace, b: NearbyPlace) => {
           return (b.rating || 0) - (a.rating || 0)
         })
@@ -152,37 +150,67 @@ export default function MapPage() {
     }
   }
 
-  const loadPlaces = async () => {
+  const loadRestaurants = async () => {
     const supabase = createBrowserClient()
 
-    const { data: burgerPlaces } = await supabase
-      .from("burger_places")
+    const { data: restaurantsData } = await supabase
+      .from("restaurants")
       .select("*")
       .not("latitude", "is", null)
       .not("longitude", "is", null)
 
-    if (burgerPlaces) {
-      const placesWithRatings = await Promise.all(
-        burgerPlaces.map(async (place) => {
-          const { data: ratings } = await supabase.from("ratings").select("*").eq("burger_place_id", place.id)
+    if (restaurantsData) {
+      const restaurantsWithRatings = await Promise.all(
+        restaurantsData.map(async (restaurant) => {
+          // Get all visits to this restaurant
+          const { data: visits } = await supabase
+            .from("visits")
+            .select(`
+              id,
+              visit_ratings (
+                meat_rating,
+                cheese_rating,
+                juiciness_rating,
+                bread_rating,
+                sauce_rating,
+                fries_rating
+              )
+            `)
+            .eq("restaurant_id", restaurant.id)
 
-          const avgRating =
-            ratings && ratings.length > 0
-              ? ratings.reduce((sum, r) => {
-                  const avg =
-                    (r.meat_rating + r.cheese_rating + r.juiciness_rating + r.bread_rating + r.sauce_rating) / 5
-                  return sum + avg
-                }, 0) / ratings.length
-              : 0
+          let totalRating = 0
+          let ratingCount = 0
+
+          if (visits) {
+            visits.forEach((visit: any) => {
+              if (visit.visit_ratings) {
+                visit.visit_ratings.forEach((rating: any) => {
+                  const sum =
+                    rating.meat_rating +
+                    rating.cheese_rating +
+                    rating.juiciness_rating +
+                    rating.bread_rating +
+                    rating.sauce_rating +
+                    (rating.fries_rating || 0)
+                  const count = rating.fries_rating ? 6 : 5
+                  totalRating += sum / count
+                  ratingCount++
+                })
+              }
+            })
+          }
+
+          const avgRating = ratingCount > 0 ? totalRating / ratingCount : 0
 
           return {
-            ...place,
+            ...restaurant,
             avg_rating: avgRating,
+            visit_count: visits?.length || 0,
           }
         }),
       )
 
-      setPlaces(placesWithRatings)
+      setRestaurants(restaurantsWithRatings)
     }
     setIsLoading(false)
   }
@@ -198,14 +226,14 @@ export default function MapPage() {
 
   const initOurMap = () => {
     if (!mapRef.current) return
-    if (places.length === 0 && !nextAdventure) return
+    if (restaurants.length === 0 && !nextAdventure) return
     if (!(window as any).google) return
 
     const center =
       nextAdventure?.latitude && nextAdventure?.longitude
         ? { lat: nextAdventure.latitude, lng: nextAdventure.longitude }
-        : places.length > 0
-          ? { lat: places[0].latitude, lng: places[0].longitude }
+        : restaurants.length > 0
+          ? { lat: restaurants[0].latitude, lng: restaurants[0].longitude }
           : { lat: 40.4168, lng: -3.7038 }
 
     const mapInstance = new (window as any).google.maps.Map(mapRef.current, {
@@ -242,11 +270,11 @@ export default function MapPage() {
       })
     }
 
-    places.forEach((place) => {
+    restaurants.forEach((restaurant) => {
       const marker = new (window as any).google.maps.Marker({
-        position: { lat: place.latitude, lng: place.longitude },
+        position: { lat: restaurant.latitude, lng: restaurant.longitude },
         map: mapInstance,
-        title: place.name,
+        title: restaurant.name,
         icon: {
           path: (window as any).google.maps.SymbolPath.CIRCLE,
           scale: 10,
@@ -258,8 +286,8 @@ export default function MapPage() {
       })
 
       marker.addListener("click", () => {
-        setSelectedPlace(place)
-        mapInstance.panTo({ lat: place.latitude, lng: place.longitude })
+        setSelectedRestaurant(restaurant)
+        mapInstance.panTo({ lat: restaurant.latitude, lng: restaurant.longitude })
       })
     })
   }
@@ -319,7 +347,7 @@ export default function MapPage() {
   const switchView = (mode: ViewMode) => {
     setViewMode(mode)
     setMap(null)
-    setSelectedPlace(null)
+    setSelectedRestaurant(null)
     setSelectedNearbyPlace(null)
   }
 
@@ -350,7 +378,7 @@ export default function MapPage() {
               </h1>
               <p className="text-sm text-gray-400">
                 {viewMode === "our-map"
-                  ? `${places.length} lugares explorados`
+                  ? `${restaurants.length} restaurantes explorados`
                   : `${nearbyPlaces.length} hamburgueserías cercanas`}
               </p>
             </div>
@@ -413,23 +441,26 @@ export default function MapPage() {
           </div>
         )}
 
-        {viewMode === "our-map" && selectedPlace && (
+        {viewMode === "our-map" && selectedRestaurant && (
           <div className="absolute bottom-4 left-4 right-4 bg-gray-900 border border-white/10 rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-4">
             <div className="flex gap-4">
               <img
-                src={selectedPlace.image_url || "/placeholder.svg"}
-                alt={selectedPlace.name}
+                src={selectedRestaurant.image_url || "/placeholder.svg"}
+                alt={selectedRestaurant.name}
                 className="w-20 h-20 rounded-xl object-cover"
               />
               <div className="flex-1">
-                <h3 className="text-white font-bold">{selectedPlace.name}</h3>
+                <h3 className="text-white font-bold">{selectedRestaurant.name}</h3>
                 <div className="flex items-center gap-1 mt-1">
                   <MapPin className="w-3 h-3 text-gray-400" />
-                  <p className="text-xs text-gray-400 line-clamp-1">{selectedPlace.address}</p>
+                  <p className="text-xs text-gray-400 line-clamp-1">{selectedRestaurant.address}</p>
                 </div>
-                <div className="flex items-center gap-1 mt-2">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-bold text-white">{selectedPlace.avg_rating.toFixed(1)}</span>
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span className="text-sm font-bold text-white">{selectedRestaurant.avg_rating.toFixed(1)}</span>
+                  </div>
+                  <span className="text-xs text-gray-400">{selectedRestaurant.visit_count} visitas</span>
                 </div>
               </div>
               <button

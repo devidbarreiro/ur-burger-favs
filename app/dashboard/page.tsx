@@ -6,29 +6,55 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Flame, Star, TrendingUp, Search, ArrowUpDown, BarChart3, Calendar, Map } from "lucide-react"
-import { BurgerCard } from "@/components/burger-card"
+import { VisitCard } from "@/components/visit-card"
 import { AddRatingModal } from "@/components/add-rating-modal"
-import { BurgerCardSkeleton } from "@/components/burger-card-skeleton"
+import { VisitCardSkeleton } from "@/components/visit-card-skeleton"
 import { NextAdventureCard } from "@/components/next-adventure-card"
 import useSWR from "swr"
 
-type BurgerPlace = {
+type Restaurant = {
   id: string
   name: string
-  image_url: string
+  address: string | null
+  latitude: number | null
+  longitude: number | null
+  place_id: string | null
+  image_url: string | null
+  created_at: string
+  created_by: string
+}
+
+type Burger = {
+  id: string
+  restaurant_id: string
+  name: string
+  created_at: string
+  created_by: string
+}
+
+type Visit = {
+  id: string
+  restaurant_id: string
+  visit_date: string
+  image_url: string | null
   created_by: string
   created_at: string
 }
 
-type Rating = {
+type VisitRating = {
   id: string
-  burger_place_id: string
+  visit_id: string
+  burger_id: string
   user_name: string
   meat_rating: number
   cheese_rating: number
   juiciness_rating: number
   bread_rating: number
   sauce_rating: number
+  fries_rating: number | null
+  price: number | null
+  comment: string | null
+  created_at: string
 }
 
 export default function DashboardPage() {
@@ -51,24 +77,31 @@ export default function DashboardPage() {
   }, [router])
 
   const fetcher = async () => {
-    const [placesRes, ratingsRes, adventureRes] = await Promise.all([
-      supabase.from("burger_places").select("*").order("created_at", { ascending: false }),
-      supabase.from("ratings").select("*"),
-      supabase.from("next_adventure").select("*").single(),
+    const [restaurantsRes, burgersRes, visitsRes, ratingsRes, adventureRes] = await Promise.all([
+      supabase.from("restaurants").select("*").order("created_at", { ascending: false }),
+      supabase.from("burgers").select("*"),
+      supabase.from("visits").select("*").order("visit_date", { ascending: false }),
+      supabase.from("visit_ratings").select("*"),
+      supabase.from("next_adventure").select("*").limit(1).maybeSingle(),
     ])
 
-    if (placesRes.error) throw placesRes.error
+    if (restaurantsRes.error) throw restaurantsRes.error
+    if (burgersRes.error) throw burgersRes.error
+    if (visitsRes.error) throw visitsRes.error
     if (ratingsRes.error) throw ratingsRes.error
 
     return {
-      places: placesRes.data as BurgerPlace[],
-      ratings: ratingsRes.data as Rating[],
+      restaurants: restaurantsRes.data as Restaurant[],
+      burgers: burgersRes.data as Burger[],
+      visits: visitsRes.data as Visit[],
+      ratings: ratingsRes.data as VisitRating[],
       nextAdventure: adventureRes.data as {
         id: string
         place_name: string
         latitude: number | null
         longitude: number | null
         address: string | null
+        place_id: string | null
         updated_at: string
         updated_by: string
       } | null,
@@ -116,13 +149,15 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     if (!data || !currentUser) return { totalReviews: 0, avgRating: 0, favoriteCategory: "Carne" }
 
-    const totalReviews = data.places.length
     const userRatings = data.ratings.filter((r) => r.user_name === currentUser)
+    const totalReviews = userRatings.length
 
     const avgRating =
       userRatings.length > 0
         ? userRatings.reduce((sum, r) => {
-            const avg = (r.meat_rating + r.cheese_rating + r.juiciness_rating + r.bread_rating + r.sauce_rating) / 5
+            const ratings = [r.meat_rating, r.cheese_rating, r.juiciness_rating, r.bread_rating, r.sauce_rating]
+            if (r.fries_rating) ratings.push(r.fries_rating)
+            const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
             return sum + avg
           }, 0) / userRatings.length
         : 0
@@ -159,63 +194,68 @@ export default function DashboardPage() {
   }, [data, currentUser])
 
   const daysSinceLastJointReview = useMemo(() => {
-    if (!data || data.places.length === 0) return null
+    if (!data || data.visits.length === 0) return null
 
-    const placesWithBothRatings = data.places.filter((place) => {
-      const placeRatings = data.ratings.filter((r) => r.burger_place_id === place.id)
-      const hasLolo = placeRatings.some((r) => r.user_name === "Lolo")
-      const hasDavid = placeRatings.some((r) => r.user_name === "David")
+    const visitsWithBothRatings = data.visits.filter((visit) => {
+      const visitRatings = data.ratings.filter((r) => r.visit_id === visit.id)
+      const hasLolo = visitRatings.some((r) => r.user_name === "Lolo")
+      const hasDavid = visitRatings.some((r) => r.user_name === "David")
       return hasLolo && hasDavid
     })
 
-    if (placesWithBothRatings.length === 0) return null
+    if (visitsWithBothRatings.length === 0) return null
 
-    const mostRecent = placesWithBothRatings.sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    )[0]
-
-    const daysDiff = Math.floor((Date.now() - new Date(mostRecent.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    const mostRecent = visitsWithBothRatings[0]
+    const daysDiff = Math.floor((Date.now() - new Date(mostRecent.visit_date).getTime()) / (1000 * 60 * 60 * 24))
     return daysDiff
   }, [data])
 
-  const filteredPlaces = useMemo(() => {
-    let places = data?.places || []
+  const filteredVisits = useMemo(() => {
+    if (!data) return []
+
+    let visits = data.visits
 
     if (searchQuery) {
-      places = places.filter((place) => place.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      const matchingRestaurants = data.restaurants.filter((r) =>
+        r.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      const restaurantIds = matchingRestaurants.map((r) => r.id)
+      visits = visits.filter((v) => restaurantIds.includes(v.restaurant_id))
     }
 
     if (filterUser !== "all") {
-      places = places.filter((place) => {
-        const placeRatings = data?.ratings.filter((r) => r.burger_place_id === place.id) || []
-        return placeRatings.some((r) => r.user_name === filterUser)
+      visits = visits.filter((visit) => {
+        const visitRatings = data.ratings.filter((r) => r.visit_id === visit.id)
+        return visitRatings.some((r) => r.user_name === filterUser)
       })
     }
 
-    return [...places].sort((a, b) => {
+    return [...visits].sort((a, b) => {
       if (sortBy === "recent") {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()
       } else if (sortBy === "name") {
-        return a.name.localeCompare(b.name)
+        const aRestaurant = data.restaurants.find((r) => r.id === a.restaurant_id)
+        const bRestaurant = data.restaurants.find((r) => r.id === b.restaurant_id)
+        return (aRestaurant?.name || "").localeCompare(bRestaurant?.name || "")
       } else if (sortBy === "rating") {
-        const aRatings = data?.ratings.filter((r) => r.burger_place_id === a.id) || []
-        const bRatings = data?.ratings.filter((r) => r.burger_place_id === b.id) || []
+        const aRatings = data.ratings.filter((r) => r.visit_id === a.id)
+        const bRatings = data.ratings.filter((r) => r.visit_id === b.id)
 
         const aAvg =
           aRatings.length > 0
             ? aRatings.reduce((sum, r) => {
-                return (
-                  sum + (r.meat_rating + r.cheese_rating + r.juiciness_rating + r.bread_rating + r.sauce_rating) / 5
-                )
+                const ratings = [r.meat_rating, r.cheese_rating, r.juiciness_rating, r.bread_rating, r.sauce_rating]
+                if (r.fries_rating) ratings.push(r.fries_rating)
+                return sum + ratings.reduce((a, b) => a + b, 0) / ratings.length
               }, 0) / aRatings.length
             : 0
 
         const bAvg =
           bRatings.length > 0
             ? bRatings.reduce((sum, r) => {
-                return (
-                  sum + (r.meat_rating + r.cheese_rating + r.juiciness_rating + r.bread_rating + r.sauce_rating) / 5
-                )
+                const ratings = [r.meat_rating, r.cheese_rating, r.juiciness_rating, r.bread_rating, r.sauce_rating]
+                if (r.fries_rating) ratings.push(r.fries_rating)
+                return sum + ratings.reduce((a, b) => a + b, 0) / ratings.length
               }, 0) / bRatings.length
             : 0
 
@@ -313,7 +353,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="px-6 mt-6">
-        {!isLoading && data && data.places.length > 0 && (
+        {!isLoading && data && data.visits.length > 0 && (
           <div className="space-y-4 mb-6">
             <NextAdventureCard
               placeName={data.nextAdventure?.place_name || ""}
@@ -342,7 +382,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {!isLoading && data && data.places.length > 0 && (
+        {!isLoading && data && data.visits.length > 0 && (
           <div className="mb-6 space-y-3 animate-in fade-in duration-500">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -401,10 +441,10 @@ export default function DashboardPage() {
         {isLoading ? (
           <div className="grid grid-cols-2 gap-3">
             {[...Array(4)].map((_, i) => (
-              <BurgerCardSkeleton key={i} />
+              <VisitCardSkeleton key={i} />
             ))}
           </div>
-        ) : data?.places.length === 0 ? (
+        ) : data?.visits.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 animate-in fade-in duration-700">
             <div className="relative mb-6">
               <Flame className="h-24 w-24 text-orange-500 opacity-20" />
@@ -414,7 +454,7 @@ export default function DashboardPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2 text-white">No hay valoraciones aún</h2>
             <p className="text-gray-400 mb-6 max-w-sm">
-              Empieza a valorar tus hamburgueserías favoritas y comparte tu opinión con{" "}
+              Empieza a valorar tus hamburguesas favoritas y comparte tu opinión con{" "}
               {currentUser === "Lolo" ? "David" : "Lolo"}
             </p>
             <Button
@@ -422,19 +462,19 @@ export default function DashboardPage() {
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg"
             >
               <Plus className="h-5 w-5 mr-2" />
-              Añadir primera hamburguesería
+              Añadir primera hamburguesa
             </Button>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-4 animate-in fade-in duration-500">
               <h3 className={`text-xl font-bold ${currentUser === "Lolo" ? "text-pink-400" : "text-blue-400"}`}>
-                {filterUser === "all" ? "Todas las Reseñas" : `Reseñas de ${filterUser}`}
-                <span className="text-sm font-normal text-gray-400 ml-2">({filteredPlaces.length})</span>
+                {filterUser === "all" ? "Todas las Visitas" : `Visitas de ${filterUser}`}
+                <span className="text-sm font-normal text-gray-400 ml-2">({filteredVisits.length})</span>
               </h3>
             </div>
 
-            {filteredPlaces.length === 0 ? (
+            {filteredVisits.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[40vh] text-center px-6">
                 <Search className="h-16 w-16 text-gray-600 mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">No se encontraron resultados</h3>
@@ -442,17 +482,22 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {filteredPlaces.map((place, index) => {
-                  const placeRatings = data.ratings.filter((r) => r.burger_place_id === place.id)
-                  const loloRating = placeRatings.find((r) => r.user_name === "Lolo")
-                  const davidRating = placeRatings.find((r) => r.user_name === "David")
+                {filteredVisits.map((visit, index) => {
+                  const restaurant = data.restaurants.find((r) => r.id === visit.restaurant_id)
+                  const visitRatings = data.ratings.filter((r) => r.visit_id === visit.id)
+                  const loloRatings = visitRatings.filter((r) => r.user_name === "Lolo")
+                  const davidRatings = visitRatings.filter((r) => r.user_name === "David")
+
+                  if (!restaurant) return null
 
                   return (
-                    <div key={place.id} className="stagger-item" style={{ animationDelay: `${index * 50}ms` }}>
-                      <BurgerCard
-                        place={place}
-                        loloRating={loloRating}
-                        davidRating={davidRating}
+                    <div key={visit.id} className="stagger-item" style={{ animationDelay: `${index * 50}ms` }}>
+                      <VisitCard
+                        visit={visit}
+                        restaurant={restaurant}
+                        loloRatings={loloRatings}
+                        davidRatings={davidRatings}
+                        burgers={data.burgers}
                         currentUser={currentUser}
                         onUpdate={() => mutate()}
                       />

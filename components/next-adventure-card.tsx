@@ -45,20 +45,24 @@ export function NextAdventureCard({
 
     setIsSaving(true)
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from("next_adventure")
-        .update({
-          place_name: placeData.name,
-          latitude: placeData.latitude,
-          longitude: placeData.longitude,
-          address: placeData.address,
-          place_id: placeData.placeId,
-          updated_by: currentUser,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", (await supabase.from("next_adventure").select("id").single()).data?.id)
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000") // Delete all rows
 
-      if (error) throw error
+      if (deleteError) throw deleteError
+
+      const { error: insertError } = await supabase.from("next_adventure").insert({
+        place_name: placeData.name,
+        latitude: placeData.latitude,
+        longitude: placeData.longitude,
+        address: placeData.address,
+        place_id: placeData.placeId,
+        updated_by: currentUser,
+        updated_at: new Date().toISOString(),
+      })
+
+      if (insertError) throw insertError
 
       toast.success("Próxima aventura actualizada")
       setIsEditing(false)
